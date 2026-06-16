@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import time
 from datetime import datetime
+import pytz  # Librería para manejar zonas horarias
 import base64
 import os
 
@@ -20,13 +21,12 @@ def get_base64_image(file_path):
         return base64.b64encode(data).decode()
     return ""
 
-# Carga la imagen de Rotoplas (asegúrate de tener rotoplas-seeklogo.png en el mismo directorio)
+# Carga la imagen de Rotoplas
 logo_base64 = get_base64_image("rotoplas-seeklogo.png")
 
 if logo_base64:
     logo_html = f'<img src="data:image/png;base64,{logo_base64}" height="60" alt="Rotoplas Logo">'
 else:
-    # Texto de respaldo en caso de que no se encuentre la imagen en la ruta
     logo_html = '<span style="color: #0072b9; font-size: 32px; font-weight: bold;">Rotoplas</span>'
 
 # CSS Estilo Rotoplas
@@ -58,9 +58,13 @@ st.markdown(diseño_rotoplas, unsafe_allow_html=True)
 
 placeholder_full = st.empty()
 
+# Definimos la zona horaria del Centro de México
+zona_cdmx = pytz.timezone('America/Mexico_City')
+
 while True:
     try:
-        ahora = datetime.now()
+        # Obtenemos la fecha y hora actual forzada a la zona horaria de CDMX
+        ahora = datetime.now(zona_cdmx)
         hora_actual = ahora.strftime("%H:%M")
         fecha_actual = ahora.strftime("%d/%m/%Y")
 
@@ -75,7 +79,7 @@ while True:
         html += f'<div class="rotoplas-time-section"><div class="clock-icon">🕒</div>{hora_actual}</div>'
         html += '</div>'
         
-        # Generar encabezados de forma dinámica leyendo las columnas del DataFrame
+        # Generar encabezados de forma dinámica
         html += '<table class="board-table"><thead><tr>'
         for columna in df.columns:
             html += f'<th>{columna}</th>'
@@ -88,7 +92,6 @@ while True:
                 valor_celda = str(row[columna]).strip()
                 valor_upper = valor_celda.upper()
                 
-                # Lógica para colorear el status independientemente de la columna en la que esté
                 clase_status = ""
                 if "PROCESO DE CARGA" in valor_upper:
                     clase_status = "status-proceso"
