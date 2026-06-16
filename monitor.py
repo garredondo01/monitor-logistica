@@ -1,8 +1,7 @@
 import streamlit as st
 import pandas as pd
 import time
-from datetime import datetime
-import pytz  # Librería para manejar zonas horarias
+from datetime import datetime, timedelta, timezone # Usamos timezone nativo
 import base64
 import os
 
@@ -13,7 +12,7 @@ st.set_page_config(page_title="Rotoplas - Monitor Embarques", layout="wide")
 SHEET_ID = "19VBW2abjR0UrBZ8QmKbKl9LY00O6eu3lzpCSJqeajYk"
 URL = f"https://docs.google.com/spreadsheets/d/{SHEET_ID}/export?format=csv"
 
-# Función para convertir la imagen local a base64 y poder insertarla en el HTML
+# Función para convertir la imagen local a base64
 def get_base64_image(file_path):
     if os.path.exists(file_path):
         with open(file_path, "rb") as f:
@@ -58,12 +57,12 @@ st.markdown(diseño_rotoplas, unsafe_allow_html=True)
 
 placeholder_full = st.empty()
 
-# Definimos la zona horaria del Centro de México
-zona_cdmx = pytz.timezone('America/Mexico_City')
+# Definimos el huso horario del Centro de México (UTC -6) de forma nativa
+zona_cdmx = timezone(timedelta(hours=-6))
 
 while True:
     try:
-        # Obtenemos la fecha y hora actual forzada a la zona horaria de CDMX
+        # Obtenemos la fecha y hora usando el huso horario UTC-6
         ahora = datetime.now(zona_cdmx)
         hora_actual = ahora.strftime("%H:%M")
         fecha_actual = ahora.strftime("%d/%m/%Y")
