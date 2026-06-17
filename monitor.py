@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 import time
-from datetime import datetime, timedelta, timezone # Usamos timezone nativo
+from datetime import datetime, timedelta, timezone
 import base64
 import os
 
@@ -57,18 +57,21 @@ st.markdown(diseño_rotoplas, unsafe_allow_html=True)
 
 placeholder_full = st.empty()
 
-# Definimos el huso horario del Centro de México (UTC -6) de forma nativa
+# Definimos el huso horario del Centro de México (UTC -6)
 zona_cdmx = timezone(timedelta(hours=-6))
 
 while True:
     try:
-        # Obtenemos la fecha y hora usando el huso horario UTC-6
+        # Hora y fecha real en base a Zona Centro de México
         ahora = datetime.now(zona_cdmx)
         hora_actual = ahora.strftime("%H:%M")
-        fecha_actual = ahora.strftime("%d/%m/%Y")
+        fecha_actual_mexico = ahora.strftime("%d/%m/%Y") # Formato: DD/MM/AAAA
 
         df = pd.read_csv(URL)
         df = df.fillna("")
+
+        # Aseguramos limpiar los nombres de las columnas quitando espacios ocultos
+        df.columns = [col.strip() for col in df.columns]
 
         # Construcción directa de HTML
         html = '<div>'
@@ -84,13 +87,26 @@ while True:
             html += f'<th>{columna}</th>'
         html += '</tr></thead><tbody>'
 
-        # Generar filas de forma dinámica
+        # Generar filas filtrando por fecha actual
         for index, row in df.iterrows():
+            
+            # FILTRO POR FECHA:
+            # Buscamos si existe una columna llamada "FECHA".
+            # Si existe, el código verifica que el contenido coincida con la fecha de hoy de México.
+            if "FECHA" in [c.upper() for c in df.columns]:
+                idx_fecha = [c for c in df.columns if c.upper() == "FECHA"][0]
+                fecha_fila = str(row[idx_fecha]).strip()
+                
+                # Si la fecha de la fila no coincide con la de hoy, se la salta.
+                if fecha_fila != fecha_actual_mexico and fecha_fila != "":
+                    continue
+
             html += '<tr>'
             for columna in df.columns:
                 valor_celda = str(row[columna]).strip()
                 valor_upper = valor_celda.upper()
                 
+                # Lógica de colores para los STATUS habituales
                 clase_status = ""
                 if "PROCESO DE CARGA" in valor_upper:
                     clase_status = "status-proceso"
@@ -107,7 +123,7 @@ while True:
             html += '</tr>'
 
         html += '</tbody></table>'
-        html += f'<div class="rotoplas-footer">{fecha_actual}</div>'
+        html += f'<div class="rotoplas-footer">{fecha_actual_mexico}</div>'
         html += '</div>'
 
         with placeholder_full.container():
