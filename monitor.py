@@ -40,9 +40,9 @@ diseño_rotoplas = """
     .rotoplas-title-section { font-size: 26px; font-weight: bold; text-transform: uppercase; text-align: center; flex-grow: 1; color: #0072b9; }
     .rotoplas-time-section { font-size: 24px; font-weight: bold; display: flex; align-items: center; color: #1a3c75; }
     .clock-icon { background-color: #0072b9; color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; margin-right: 10px; font-size: 18px; }
-    .board-table { width: 100%; border-collapse: collapse; font-size: 20px; }
+    .board-table { width: 100%; border-collapse: collapse; font-size: 18px; }
     .board-table thead tr { background-color: #0072b9; color: white; }
-    .board-table th { padding: 15px; text-align: left; font-weight: bold; border-right: 1px solid rgba(255,255,255,0.2); text-transform: uppercase; }
+    .board-table th { padding: 15px; text-align: left; font-weight: bold; border-right: 1px solid rgba(255,255,255,0.2); font-size: 20px;text-transform: uppercase; }
     .board-table tbody tr { border-bottom: 1px solid rgba(255,255,255,0.05); }
     .board-table tbody tr:nth-child(odd) { background-color: #0c172a; }
     .board-table tbody tr:nth-child(even) { background-color: #152d52; }
