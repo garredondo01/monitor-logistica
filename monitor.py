@@ -66,19 +66,29 @@ diseño_rotoplas = """
     .rotoplas-time-section { font-size: 20px; font-weight: bold; display: flex; align-items: center; color: #1a3c75; }
     .clock-icon { background-color: #0072b9; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; margin-right: 10px; font-size: 16px; }
     
-    /* TABLA OPTIMIZADA: Reducimos letra y espaciado (padding) para que quepa todo sin perder visibilidad */
+    /* TABLA OPTIMIZADA */
     .board-table { 
         width: 100%; 
         border-collapse: collapse; 
-        font-size: 16px; /* Bajamos de 20px a 16px para balancear la TV */
+        font-size: 16px; 
     }
     .board-table thead tr { background-color: #0072b9; color: white; }
-    .board-table th { padding: 10px 12px; text-align: left; font-weight: bold; border-right: 1px solid rgba(255,255,255,0.2); text-transform: uppercase; font-size: 15px; }
+    
+    /* 🚨 ENCABEZADOS DE COLUMNA CORREGIDOS (MÁS GRANDES Y CENTRADOS) 🚨 */
+    .board-table th { 
+        padding: 12px 12px; 
+        text-align: center; /* Centra los títulos de cada columna */
+        font-weight: bold; 
+        border-right: 1px solid rgba(255,255,255,0.2); 
+        text-transform: uppercase; 
+        font-size: 19px; /* Tamaño intermedio ideal para la TV */
+    }
+    
     .board-table tbody tr { border-bottom: 1px solid rgba(255,255,255,0.05); }
     .board-table tbody tr:nth-child(odd) { background-color: #0c172a; }
     .board-table tbody tr:nth-child(even) { background-color: #152d52; }
     
-    /* Reducimos el alto de las filas (padding de 18px a 12px) para evitar scroll innecesario */
+    /* Celdas de datos de la tabla */
     .board-table td { padding: 12px 12px; font-weight: bold; text-transform: uppercase; color: white; border-right: 1px solid rgba(255,255,255,0.05); }
     
     /* Colores de Status */
@@ -143,7 +153,7 @@ while True:
                     clase_status = "status-proceso"
                 elif "CARGADO" in valor_upper:
                     clase_status = "status-cargado"
-                elif "POR LLEGAR" in valor_upper:  # Corregido: antes apuntaba a 'status_raw' que no existía en esta versión limpia
+                elif "POR LLEGAR" in valor_upper:  
                     clase_status = "status-por-llegar"
 
                 if clase_status:
