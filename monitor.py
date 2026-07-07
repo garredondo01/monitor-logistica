@@ -74,22 +74,27 @@ diseño_rotoplas = """
     }
     .board-table thead tr { background-color: #0072b9; color: white; }
     
-    /* 🚨 ENCABEZADOS DE COLUMNA CORREGIDOS (MÁS GRANDES Y CENTRADOS) 🚨 */
+    /* Encabezados de columna por defecto (Márgenes grandes e intermedios) */
     .board-table th { 
         padding: 12px 12px; 
-        text-align: center; /* Centra los títulos de cada columna */
+        text-align: left; /* Por defecto alineados a la izquierda */
         font-weight: bold; 
         border-right: 1px solid rgba(255,255,255,0.2); 
         text-transform: uppercase; 
-        font-size: 19px; /* Tamaño intermedio ideal para la TV */
+        font-size: 19px; 
     }
     
     .board-table tbody tr { border-bottom: 1px solid rgba(255,255,255,0.05); }
     .board-table tbody tr:nth-child(odd) { background-color: #0c172a; }
     .board-table tbody tr:nth-child(even) { background-color: #152d52; }
     
-    /* Celdas de datos de la tabla */
+    /* Celdas de datos de la tabla por defecto */
     .board-table td { padding: 12px 12px; font-weight: bold; text-transform: uppercase; color: white; border-right: 1px solid rgba(255,255,255,0.05); }
+    
+    /* 🚨 CLASE ESPECIAL PARA CENTRAR COLUMNAS ESPECÍFICAS (Encabezado y Datos) 🚨 */
+    .col-centro {
+        text-align: center !important;
+    }
     
     /* Colores de Status */
     .status-proceso { color: #f1c40f !important; }
@@ -126,10 +131,14 @@ while True:
         html += f'<div class="rotoplas-time-section"><div class="clock-icon">🕒</div>{hora_actual}</div>'
         html += '</div>'
         
-        # Generar encabezados de forma dinámica
+        # Generar encabezados de forma dinámica aplicando la clase de centrado
         html += '<table class="board-table"><thead><tr>'
         for columna in df.columns:
-            html += f'<th>{columna}</th>'
+            nombre_upper = columna.upper()
+            if "HORA" in nombre_upper or "LLEGADA" in nombre_upper or "STATUS" in nombre_upper or "FECHA" in nombre_upper:
+                html += f'<th class="col-centro">{columna}</th>'
+            else:
+                html += f'<th>{columna}</th>'
         html += '</tr></thead><tbody>'
 
         # Generar filas filtrando por fecha actual
@@ -147,6 +156,11 @@ while True:
             for columna in df.columns:
                 valor_celda = str(row[columna]).strip()
                 valor_upper = valor_celda.upper()
+                nombre_col_upper = columna.upper()
+                
+                # Determinar si la columna requiere alineación centrada (Fecha, Horas, Status)
+                es_col_centrada = "HORA" in nombre_col_upper or "LLEGADA" in nombre_col_upper or "STATUS" in nombre_col_upper or "FECHA" in nombre_col_upper
+                clase_centro = " col-centro" if es_col_centrada else ""
                 
                 clase_status = ""
                 if "PROCESO DE CARGA" in valor_upper:
@@ -157,9 +171,9 @@ while True:
                     clase_status = "status-por-llegar"
 
                 if clase_status:
-                    html += f'<td class="{clase_status}">{valor_celda}</td>'
+                    html += f'<td class="{clase_status}{clase_centro}">{valor_celda}</td>'
                 else:
-                    html += f'<td>{valor_celda}</td>'
+                    html += f'<td class="{clase_centro}">{valor_celda}</td>'
                     
             html += '</tr>'
 
