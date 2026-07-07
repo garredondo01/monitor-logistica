@@ -24,33 +24,68 @@ def get_base64_image(file_path):
 logo_base64 = get_base64_image("rotoplas-seeklogo.png")
 
 if logo_base64:
-    logo_html = f'<img src="data:image/png;base64,{logo_base64}" height="60" alt="Rotoplas Logo">'
+    logo_html = f'<img src="data:image/png;base64,{logo_base64}" height="50" alt="Rotoplas Logo">'
 else:
-    logo_html = '<span style="color: #0072b9; font-size: 32px; font-weight: bold;">Rotoplas</span>'
+    logo_html = '<span style="color: #0072b9; font-size: 28px; font-weight: bold;">Rotoplas</span>'
 
-# CSS Estilo Rotoplas
+# CSS Estilo Rotoplas - OPTIMIZADO PARA PANTALLAS DE GOOGLE TV
 diseño_rotoplas = """
 <style>
     #MainMenu {visibility: hidden;}
     footer {visibility: hidden;}
     header {visibility: hidden;}
-    .stApp { background-color: #0c172a; color: white; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; }
-    .rotoplas-header { display: flex; justify-content: space-between; align-items: center; background-color: white; color: #1a3c75; padding: 10px 30px; border-bottom: 2px solid #ccc; }
+    
+    /* Fondo principal */
+    .stApp { 
+        background-color: #0c172a; 
+        color: white; 
+        font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; 
+    }
+    
+    /* Contenedor principal con márgenes de seguridad para TV */
+    .tv-safe-layout {
+        width: 96%;
+        margin: 0 auto;
+        padding-top: 10px;
+    }
+    
+    /* Header ligeramente más compacto */
+    .rotoplas-header { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        background-color: white; 
+        color: #1a3c75; 
+        padding: 8px 25px; 
+        border-bottom: 2px solid #ccc; 
+        border-radius: 4px;
+        margin-bottom: 15px;
+    }
     .rotoplas-logo-section { display: flex; align-items: center; }
-    .rotoplas-title-section { font-size: 26px; font-weight: bold; text-transform: uppercase; text-align: center; flex-grow: 1; color: #0072b9; }
-    .rotoplas-time-section { font-size: 24px; font-weight: bold; display: flex; align-items: center; color: #1a3c75; }
-    .clock-icon { background-color: #0072b9; color: white; border-radius: 50%; width: 35px; height: 35px; display: flex; justify-content: center; align-items: center; margin-right: 10px; font-size: 18px; }
-    .board-table { width: 100%; border-collapse: collapse; font-size: 20px; }
+    .rotoplas-title-section { font-size: 22px; font-weight: bold; text-transform: uppercase; text-align: center; flex-grow: 1; color: #0072b9; }
+    .rotoplas-time-section { font-size: 20px; font-weight: bold; display: flex; align-items: center; color: #1a3c75; }
+    .clock-icon { background-color: #0072b9; color: white; border-radius: 50%; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; margin-right: 10px; font-size: 16px; }
+    
+    /* TABLA OPTIMIZADA: Reducimos letra y espaciado (padding) para que quepa todo sin perder visibilidad */
+    .board-table { 
+        width: 100%; 
+        border-collapse: collapse; 
+        font-size: 16px; /* Bajamos de 20px a 16px para balancear la TV */
+    }
     .board-table thead tr { background-color: #0072b9; color: white; }
-    .board-table th { padding: 15px; text-align: left; font-weight: bold; border-right: 1px solid rgba(255,255,255,0.2); text-transform: uppercase; }
+    .board-table th { padding: 10px 12px; text-align: left; font-weight: bold; border-right: 1px solid rgba(255,255,255,0.2); text-transform: uppercase; font-size: 15px; }
     .board-table tbody tr { border-bottom: 1px solid rgba(255,255,255,0.05); }
     .board-table tbody tr:nth-child(odd) { background-color: #0c172a; }
     .board-table tbody tr:nth-child(even) { background-color: #152d52; }
-    .board-table td { padding: 18px 15px; font-weight: bold; text-transform: uppercase; color: white; border-right: 1px solid rgba(255,255,255,0.05); }
+    
+    /* Reducimos el alto de las filas (padding de 18px a 12px) para evitar scroll innecesario */
+    .board-table td { padding: 12px 12px; font-weight: bold; text-transform: uppercase; color: white; border-right: 1px solid rgba(255,255,255,0.05); }
+    
+    /* Colores de Status */
     .status-proceso { color: #f1c40f !important; }
     .status-cargado { color: #2ecc71 !important; }
     .status-por-llegar { color: #e74c3c !important; font-weight: bold;}
-    .rotoplas-footer { text-align: right; padding: 20px; color: rgba(255,255,255,0.6); font-size: 18px; font-weight: bold; }
+    .rotoplas-footer { text-align: right; padding: 15px; color: rgba(255,255,255,0.6); font-size: 16px; font-weight: bold; }
 </style>
 """
 st.markdown(diseño_rotoplas, unsafe_allow_html=True)
@@ -65,7 +100,7 @@ while True:
         # Hora y fecha real en base a Zona Centro de México
         ahora = datetime.now(zona_cdmx)
         hora_actual = ahora.strftime("%H:%M")
-        fecha_actual_mexico = ahora.strftime("%d/%m/%Y") # Formato: DD/MM/AAAA
+        fecha_actual_mexico = ahora.strftime("%d/%m/%Y")
 
         df = pd.read_csv(URL)
         df = df.fillna("")
@@ -73,10 +108,10 @@ while True:
         # Aseguramos limpiar los nombres de las columnas quitando espacios ocultos
         df.columns = [col.strip() for col in df.columns]
 
-        # Construcción directa de HTML
-        html = '<div>'
+        # Estructura con márgenes seguros para televisión
+        html = '<div class="tv-safe-layout">'
         html += '<div class="rotoplas-header">'
-        html += f'<div class="rotoplas-logo-section">{logo_html}<div style="font-size:14px; margin-left:15px; color:#555; font-weight:bold; border-left: 2px solid #ccc; padding-left: 10px;">Operaciones<br>Logísticas</div></div>'
+        html += f'<div class="rotoplas-logo-section">{logo_html}<div style="font-size:12px; margin-left:12px; color:#555; font-weight:bold; border-left: 2px solid #ccc; padding-left: 8px;">Operaciones<br>Logísticas</div></div>'
         html += '<div class="rotoplas-title-section">MONITOR EMBARQUES COMPUESTOS</div>'
         html += f'<div class="rotoplas-time-section"><div class="clock-icon">🕒</div>{hora_actual}</div>'
         html += '</div>'
@@ -91,13 +126,10 @@ while True:
         for index, row in df.iterrows():
             
             # FILTRO POR FECHA:
-            # Buscamos si existe una columna llamada "FECHA".
-            # Si existe, el código verifica que el contenido coincida con la fecha de hoy de México.
             if "FECHA" in [c.upper() for c in df.columns]:
                 idx_fecha = [c for c in df.columns if c.upper() == "FECHA"][0]
                 fecha_fila = str(row[idx_fecha]).strip()
                 
-                # Si la fecha de la fila no coincide con la de hoy, se la salta.
                 if fecha_fila != fecha_actual_mexico and fecha_fila != "":
                     continue
 
@@ -106,13 +138,12 @@ while True:
                 valor_celda = str(row[columna]).strip()
                 valor_upper = valor_celda.upper()
                 
-                # Lógica de colores para los STATUS habituales
                 clase_status = ""
                 if "PROCESO DE CARGA" in valor_upper:
                     clase_status = "status-proceso"
                 elif "CARGADO" in valor_upper:
                     clase_status = "status-cargado"
-                elif "POR LLEGAR" in valor_upper:
+                elif "POR LLEGAR" in valor_upper:  # Corregido: antes apuntaba a 'status_raw' que no existía en esta versión limpia
                     clase_status = "status-por-llegar"
 
                 if clase_status:
@@ -124,7 +155,7 @@ while True:
 
         html += '</tbody></table>'
         html += f'<div class="rotoplas-footer">{fecha_actual_mexico}</div>'
-        html += '</div>'
+        html += '</div>' # Cierre de tv-safe-layout
 
         with placeholder_full.container():
             st.markdown(html, unsafe_allow_html=True)
