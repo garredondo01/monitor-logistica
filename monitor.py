@@ -28,7 +28,7 @@ if logo_base64:
 else:
     logo_html = '<span style="color: #0072b9; font-size: 28px; font-weight: bold;">Rotoplas</span>'
 
-# CSS Estilo Rotoplas - OPTIMIZADO PARA PANTALLAS DE GOOGLE TV
+# CSS Estilo Rotoplas - CON LÓGICA DE COLORES PARA TODA LA LÍNEA Y EFECTO INTERMITENTE
 diseño_rotoplas = """
 <style>
     #MainMenu {visibility: hidden;}
@@ -49,7 +49,7 @@ diseño_rotoplas = """
         padding-top: 10px;
     }
     
-    /* Header ligeramente más compacto */
+    /* Header */
     .rotoplas-header { 
         display: flex; 
         justify-content: space-between; 
@@ -74,10 +74,10 @@ diseño_rotoplas = """
     }
     .board-table thead tr { background-color: #0072b9; color: white; }
     
-    /* Encabezados de columna por defecto (Márgenes grandes e intermedios) */
+    /* Encabezados de columna */
     .board-table th { 
         padding: 12px 12px; 
-        text-align: left; /* Por defecto alineados a la izquierda */
+        text-align: left; 
         font-weight: bold; 
         border-right: 1px solid rgba(255,255,255,0.2); 
         text-transform: uppercase; 
@@ -85,21 +85,50 @@ diseño_rotoplas = """
     }
     
     .board-table tbody tr { border-bottom: 1px solid rgba(255,255,255,0.05); }
-    .board-table tbody tr:nth-child(odd) { background-color: #0c172a; }
-    .board-table tbody tr:nth-child(even) { background-color: #152d52; }
     
-    /* Celdas de datos de la tabla por defecto */
+    /* Celdas de datos generales */
     .board-table td { padding: 12px 12px; font-weight: bold; text-transform: uppercase; color: white; border-right: 1px solid rgba(255,255,255,0.05); }
     
-    /* 🚨 CLASE ESPECIAL PARA CENTRAR COLUMNAS ESPECÍFICAS (Encabezado y Datos) 🚨 */
+    /* Clase para centrar columnas específicas */
     .col-centro {
         text-align: center !important;
     }
     
-    /* Colores de Status */
-    .status-proceso { color: #f1c40f !important; }
-    .status-cargado { color: #2ecc71 !important; }
-    .status-por-llegar { color: #e74c3c !important; font-weight: bold;}
+    /* 🚨 ESTILOS DE ESTATUS PERSONALIZADOS (APLICADOS A TODA LA FILA O COLOR ESPECÍFICO) 🚨 */
+    
+    /* 1. UNIDAD CARGADA: Letras de toda la fila en color verde */
+    .fila-unidad-cargada td {
+        color: #2ecc71 !important;
+    }
+    
+    /* 2. PROCESO DE CARGA: Letras de toda la fila en color amarillo */
+    .fila-proceso-carga td {
+        color: #f1c40f !important;
+    }
+    
+    /* 3. PENDIENTE FACTURA: Letras en rojo y animación intermitente */
+    .fila-pendiente-factura td {
+        color: #e74c3c !important;
+        animation: parpadeo 1.2s infinite;
+    }
+    
+    /* 4. EN RAMPA: Letras en blanco (por defecto) */
+    .fila-en-rampa td {
+        color: #ffffff !important;
+    }
+    
+    /* 5. PENDIENTE: Letras en blanco (por defecto) */
+    .fila-pendiente td {
+        color: #ffffff !important;
+    }
+
+    /* Animación para el parpadeo del texto rojo */
+    @keyframes parpadeo {
+        0% { opacity: 1.0; }
+        50% { opacity: 0.2; }
+        100% { opacity: 1.0; }
+    }
+
     .rotoplas-footer { text-align: right; padding: 15px; color: rgba(255,255,255,0.6); font-size: 16px; font-weight: bold; }
 </style>
 """
@@ -122,6 +151,9 @@ while True:
 
         # Aseguramos limpiar los nombres de las columnas quitando espacios ocultos
         df.columns = [col.strip() for col in df.columns]
+
+        # 🚨 FILTRO ELIMINAR ID: Quitamos la columna ID para que no se muestre en el monitor 🚨
+        df = df.drop(columns=["ID"], errors="ignore")
 
         # Estructura con márgenes seguros para televisión
         html = '<div class="tv-safe-layout">'
@@ -152,28 +184,39 @@ while True:
                 if fecha_fila != fecha_actual_mexico and fecha_fila != "":
                     continue
 
-            html += '<tr>'
+            # Evaluar el STATUS de la fila actual para asignarle su clase a todo el <tr>
+            clase_fila = ""
+            status_celda_raw = ""
+            
+            if "STATUS" in [c.upper() for c in df.columns]:
+                idx_status = [c for c in df.columns if c.upper() == "STATUS"][0]
+                status_celda_raw = str(row[idx_status]).strip().upper()
+                
+                if "UNIDAD CARGADA" in status_celda_raw:
+                    clase_fila = ' class="fila-unidad-cargada"'
+                elif "PENDIENTE FACTURA" in status_celda_raw:
+                    clase_fila = ' class="fila-pendiente-factura"'
+                elif "PROCESO DE CARGA" in status_celda_raw:
+                    clase_fila = ' class="fila-proceso-carga"'
+                elif "EN RAMPA" in status_celda_raw:
+                    clase_fila = ' class="fila-en-rampa"'
+                elif "PENDIENTE" in status_celda_raw:
+                    clase_fila = ' class="fila-pendiente"'
+
+            html += f'<tr{clase_fila}>'
             for columna in df.columns:
                 valor_celda = str(row[columna]).strip()
-                valor_upper = valor_celda.upper()
                 nombre_col_upper = columna.upper()
                 
                 # Determinar si la columna requiere alineación centrada (Fecha, Horas, Status)
                 es_col_centrada = "HORA" in nombre_col_upper or "LLEGADA" in nombre_col_upper or "STATUS" in nombre_col_upper or "FECHA" in nombre_col_upper
-                clase_centro = " col-centro" if es_col_centrada else ""
+                clase_centro = ' class="col-centro"' if es_col_centrada else ""
                 
-                clase_status = ""
-                if "PROCESO DE CARGA" in valor_upper:
-                    clase_status = "status-proceso"
-                elif "CARGADO" in valor_upper:
-                    clase_status = "status-cargado"
-                elif "POR LLEGAR" in valor_upper:  
-                    clase_status = "status-por-llegar"
-
-                if clase_status:
-                    html += f'<td class="{clase_status}{clase_centro}">{valor_celda}</td>'
+                # 🚨 AGREGAR LA BANDERITA ACUADROS SI EL ESTATUS ES "EN RAMPA" 🚨
+                if nombre_col_upper == "STATUS" and "EN RAMPA" in valor_celda.upper():
+                    html += f'<td{clase_centro}>🏁 {valor_celda}</td>'
                 else:
-                    html += f'<td class="{clase_centro}">{valor_celda}</td>'
+                    html += f'<td{clase_centro}>{valor_celda}</td>'
                     
             html += '</tr>'
 
