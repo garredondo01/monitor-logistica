@@ -28,7 +28,7 @@ if logo_base64:
 else:
     logo_html = '<span style="color: #0072b9; font-size: 28px; font-weight: bold;">Rotoplas</span>'
 
-# CSS Estilo Rotoplas - CORREGIDO PARA COLUMNA "ESTATUS" Y COLOR COMPLETO DE LÍNEA
+# CSS Estilo Rotoplas - INCLUYE ESTATUS DESCARGA
 diseño_rotoplas = """
 <style>
     #MainMenu {visibility: hidden;}
@@ -96,33 +96,38 @@ diseño_rotoplas = """
     
     /* 🚨 REGLAS DE COLOR PARA TODA LA LÍNEA 🚨 */
     
-    /* 1. UNIDAD CARGADA -> Letras verdes en toda la fila */
+    /* 1. UNIDAD CARGADA -> Letras verdes */
     .fila-unidad-cargada td {
         color: #2ecc71 !important;
     }
     
-    /* 2. PROCESO DE CARGA -> Letras amarillas en toda la fila */
+    /* 2. PROCESO DE CARGA -> Letras amarillas */
     .fila-proceso-carga td {
         color: #f1c40f !important;
     }
     
-    /* 3. PENDIENTE FACTURA -> Letras rojas y animación intermitente */
+    /* 🚨 3. DESCARGA -> Letras amarillas en toda la fila 🚨 */
+    .fila-descarga td {
+        color: #f1c40f !important;
+    }
+    
+    /* 4. PENDIENTE FACTURA -> Letras rojas y animación intermitente */
     .fila-pendiente-factura td {
         color: #e74c3c !important;
         animation: parpadeo 1.2s infinite;
     }
     
-    /* 4. EN RAMPA -> Letras blancas */
+    /* 5. EN RAMPA -> Letras blancas */
     .fila-en-rampa td {
         color: #ffffff !important;
     }
     
-    /* 5. PENDIENTE / PDTE -> Letras blancas */
+    /* 6. PENDIENTE / PDTE -> Letras blancas */
     .fila-pendiente td {
         color: #ffffff !important;
     }
     
-    /* Por defecto, si no coincide con ningún estatus, el texto es blanco */
+    /* Por defecto */
     .fila-defecto td {
         color: #ffffff !important;
     }
@@ -157,7 +162,7 @@ while True:
         # Aseguramos limpiar los nombres de las columnas quitando espacios ocultos
         df.columns = [col.strip() for col in df.columns]
 
-        # FILTRO ELIMINAR ID: Oculta la columna ID de manera segura
+        # FILTRO ELIMINAR ID
         df = df.drop(columns=["ID"], errors="ignore")
 
         # Estructura con márgenes seguros para televisión
@@ -168,7 +173,7 @@ while True:
         html += f'<div class="rotoplas-time-section"><div class="clock-icon">🕒</div>{hora_actual}</div>'
         html += '</div>'
         
-        # Generar encabezados aplicando la clase de centrado (Detecta tanto "STATUS" como "ESTATUS")
+        # Generar encabezados aplicando la clase de centrado
         html += '<table class="board-table"><thead><tr>'
         for columna in df.columns:
             nombre_upper = columna.upper()
@@ -189,11 +194,10 @@ while True:
                 if fecha_fila != fecha_actual_mexico and fecha_fila != "":
                     continue
 
-            # Evaluar la columna de ESTATUS/STATUS para asignarle su clase CSS a todo el <tr>
+            # Evaluar la columna de ESTATUS/STATUS para la clase CSS
             clase_fila = ' class="fila-defecto"'
             estatus_celda_upper = ""
             
-            # Buscamos de forma flexible si se llama "ESTATUS" o "STATUS"
             columnas_estatus = [c for c in df.columns if c.upper() in ["ESTATUS", "STATUS"]]
             if columnas_estatus:
                 idx_estatus = columnas_estatus[0]
@@ -205,6 +209,8 @@ while True:
                     clase_fila = ' class="fila-pendiente-factura"'
                 elif "PROCESO DE CARGA" in estatus_celda_upper:
                     clase_fila = ' class="fila-proceso-carga"'
+                elif "DESCARGA" in estatus_celda_upper:
+                    clase_fila = ' class="fila-descarga"'
                 elif "EN RAMPA" in estatus_celda_upper:
                     clase_fila = ' class="fila-en-rampa"'
                 elif "PENDIENTE" in estatus_celda_upper or estatus_celda_upper == "PDTE":
@@ -215,13 +221,18 @@ while True:
                 valor_celda = str(row[columna]).strip()
                 nombre_col_upper = columna.upper()
                 
-                # Determinar si la celda se alinea al centro (Fechas, Horas, Estatus)
+                # Determinar si la celda se alinea al centro
                 es_col_centrada = "HORA" in nombre_col_upper or "LLEGADA" in nombre_col_upper or "SALIDA" in nombre_col_upper or "STATUS" in nombre_col_upper or "ESTATUS" in nombre_col_upper or "FECHA" in nombre_col_upper
                 clase_centro = ' class="col-centro"' if es_col_centrada else ""
                 
-                # Inyectar banderita de cuadros si el nombre de la columna es ESTATUS/STATUS y el valor es "EN RAMPA"
-                if nombre_col_upper in ["ESTATUS", "STATUS"] and "EN RAMPA" in valor_celda.upper():
-                    html += f'<td{clase_centro}>🏁 {valor_celda}</td>'
+                # Inyección de iconos según el estatus
+                if nombre_col_upper in ["ESTATUS", "STATUS"]:
+                    if "EN RAMPA" in valor_celda.upper():
+                        html += f'<td{clase_centro}>🏁 {valor_celda}</td>'
+                    elif "DESCARGA" in valor_celda.upper():
+                        html += f'<td{clase_centro}>⬇️⬇️ {valor_celda}</td>'
+                    else:
+                        html += f'<td{clase_centro}>{valor_celda}</td>'
                 else:
                     html += f'<td{clase_centro}>{valor_celda}</td>'
                     
@@ -229,7 +240,7 @@ while True:
 
         html += '</tbody></table>'
         html += f'<div class="rotoplas-footer">{fecha_actual_mexico}</div>'
-        html += '</div>' # Cierre de tv-safe-layout
+        html += '</div>'
 
         with placeholder_full.container():
             st.markdown(html, unsafe_allow_html=True)
